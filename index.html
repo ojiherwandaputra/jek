@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <title>Kriptografi Lengkap</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #1e3c72, #2a5298);
+      color: #333;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 1100px;
+      background: #ffffff;
+      border-radius: 20px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.25);
+      padding: 30px 35px 35px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: #1e3c72;
+    }
+
+    header span {
+      display: block;
+      margin-top: 6px;
+      font-size: 0.95rem;
+      font-weight: 400;
+      color: #666;
+    }
+
+    .container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 25px;
+    }
+
+    .card {
+      background: #f9fafc;
+      border-radius: 16px;
+      padding: 22px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+    }
+
+    .card h3 {
+      margin-top: 0;
+      margin-bottom: 15px;
+      font-size: 1.1rem;
+      color: #1e3c72;
+    }
+
+    select,
+    textarea,
+    input[type="text"] {
+      width: 100%;
+      border-radius: 12px;
+      border: 1px solid #ddd;
+      padding: 12px 14px;
+      font-size: 0.95rem;
+      margin-bottom: 12px;
+      outline: none;
+      transition: border 0.2s, box-shadow 0.2s;
+    }
+
+    select:focus,
+    textarea:focus,
+    input[type="text"]:focus {
+      border-color: #2a5298;
+      box-shadow: 0 0 0 3px rgba(42,82,152,0.15);
+    }
+
+    textarea {
+      min-height: 140px;
+      resize: vertical;
+    }
+
+    .key-box {
+      margin-bottom: 12px;
+    }
+
+    .info-box {
+      background: #eef3ff;
+      border-left: 5px solid #2a5298;
+      padding: 12px 14px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      margin-bottom: 16px;
+      color: #333;
+    }
+
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    button {
+      border: none;
+      border-radius: 12px;
+      padding: 12px 10px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 14px rgba(0,0,0,0.15);
+      opacity: 0.95;
+    }
+
+    button:active {
+      transform: translateY(0);
+      box-shadow: none;
+    }
+
+    .btn-encrypt { background: #2a5298; color: #fff; }
+    .btn-decrypt { background: #1e3c72; color: #fff; }
+    .btn-download { background: #4caf50; color: #fff; }
+
+    #outputText {
+      min-height: 280px;
+      background: #ffffff;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 25px;
+      font-size: 0.8rem;
+      color: #888;
+    }
+
+    @media (max-width: 900px) {
+      .container {
+        grid-template-columns: 1fr;
+      }
+
+      .buttons {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app">
+    <header>
+      <h1>Kriptografi Lengkap</h1>
+      <span> Oji Herwanda Putra – 2255201242</span>
+    </header>
+
+    <div class="container">
+
+      <!-- INPUT -->
+      <div class="card">
+        <h3>Input & Pengaturan</h3>
+
+        <select id="method" onchange="showInputs()">
+          <option>Caesar</option>
+          <option>Vigenere</option>
+          <option>Hill</option>
+          <option>RSA</option>
+          <option>RSA Dokumen</option>
+          <option>AES</option>
+          <option>AES Dokumen</option>
+        </select>
+
+        <textarea id="inputText" placeholder="Masukkan teks atau pesan di sini..."></textarea>
+
+        <div class="key-box" id="keyBox"></div>
+
+        <div class="info-box" id="infoBox">
+          <b>📘 Penjelasan Kunci</b>
+          <p>Pilih metode kriptografi untuk melihat detail kunci.</p>
+        </div>
+
+        <input type="file" id="fileInput" accept=".txt" hidden />
+
+        <div class="buttons">
+          <button class="btn-encrypt" onclick="process('encrypt')">🔐 Enkripsi</button>
+          <button class="btn-decrypt" onclick="process('decrypt')">🔓 Dekripsi</button>
+          <button class="btn-download" onclick="downloadResult()">💾 Download</button>
+        </div>
+      </div>
+
+      <!-- OUTPUT -->
+      <div class="card">
+        <h3>Hasil Output</h3>
+        <textarea id="outputText" readonly placeholder="Hasil enkripsi / dekripsi akan muncul di sini..."></textarea>
+      </div>
+
+    </div>
+
+    <footer>
+      © 2026 • Aplikasi Kriptografi Web
+    </footer>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
